@@ -1,0 +1,71 @@
+{
+  "name": "examedu-secure-browser",
+  "version": "1.0.0",
+  "description": "Secure Exam Browser for macOS - Media Pendidikan Anti-Curang",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "build:mac": "electron-builder --mac dmg zip",
+    "build:mac-arm64": "electron-builder --mac dmg --arm64",
+    "build:mac-x64": "electron-builder --mac dmg --x64",
+    "build:mac-universal": "electron-builder --mac dmg --universal"
+  },
+  "keywords": [
+    "exam",
+    "cbt",
+    "secure-browser",
+    "kiosk",
+    "macos"
+  ],
+  "author": "ExamEdu",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.examedu.securebrowser",
+    "productName": "Secure Exam Browser",
+    "copyright": "Copyright © 2026 ExamEdu",
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "src/assets/icon.png",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "darkModeSupport": true
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "store.js",
+      "src/**/*"
+    ]
+  }
+}

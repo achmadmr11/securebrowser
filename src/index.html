@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Exam Browser</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- WELCOME VIEW -->
+  <div id="welcomeView" class="view active">
+    <div class="welcome-container">
+      <div class="logo-wrapper" id="logoWrapper" title="Klik tahan untuk Pengaturan Admin">
+        <img src="assets/logo.png" alt="Logo ExamEdu" class="app-logo" id="appLogo">
+        <div class="logo-glow"></div>
+      </div>
+
+      <h1 id="appTitle" class="app-title">Secure Exam Browser</h1>
+      <p class="app-subtitle">Media Pendidikan Anti-Curang</p>
+
+      <div class="action-card">
+        <button id="btnStartExam" class="btn btn-primary btn-start">
+          <span class="btn-icon">▶</span>
+          <span class="btn-text">Mulai Ujian</span>
+        </button>
+        <div class="security-badge">
+          <span class="shield-icon">🛡️</span>
+          <span>Sistem Ujian Aman • Kiosk Mode Terkunci</span>
+        </div>
+      </div>
+
+      <div class="welcome-footer">
+        <span class="version-tag">V.1.0 (macOS Edition)</span>
+        <button id="btnOpenAdmin" class="btn-text-link" title="Pengaturan Admin">⚙️ Admin</button>
+        <button id="btnOpenExit" class="btn-text-link" title="Keluar Aplikasi">🚪 Keluar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAM PORTAL VIEW -->
+  <div id="examView" class="view">
+    <!-- Top Minimal Navigation Bar -->
+    <header class="exam-header" id="examHeader">
+      <div class="header-left">
+        <button id="btnWebBack" class="btn-icon-action" title="Kembali Halaman">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button id="btnWebReload" class="btn-icon-action" title="Muat Ulang Halaman">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
+        <span id="examHeaderTitle" class="exam-header-title">Portal CBT</span>
+      </div>
+
+      <div class="header-right">
+        <span class="badge-lock">🔒 TERKUNCI</span>
+        <button id="btnExitExam" class="btn-danger-exit">
+          <span>Keluar Ujian</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Webview Container -->
+    <div class="webview-container" id="webviewContainer">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Memuat Lembar Ujian...</p>
+      </div>
+      <webview id="cbtWebview" class="cbt-webview" partition="persist:cbt" allowpopups="false"></webview>
+    </div>
+  </div>
+
+  <!-- ADMIN SETTINGS MODAL -->
+  <div id="adminModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>⚙️ Pengaturan Admin</h2>
+        <span class="modal-subtitle">Konfigurasi URL dan Judul Portal</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="adminPassInput">Password Admin</label>
+          <input type="password" id="adminPassInput" class="form-control" placeholder="Masukkan password admin">
+        </div>
+        <div class="form-group">
+          <label for="examUrlInput">Link Portal Ujian (CBT URL)</label>
+          <input type="url" id="examUrlInput" class="form-control" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label for="appTitleInput">Judul Aplikasi</label>
+          <input type="text" id="appTitleInput" class="form-control" placeholder="Secure Exam Browser">
+        </div>
+        <div id="adminErrorMsg" class="error-msg"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelAdmin" class="btn btn-secondary">Batal</button>
+        <button id="btnSaveAdmin" class="btn btn-primary">Simpan Pengaturan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXIT CONFIRMATION MODAL -->
+  <div id="exitModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>🚪 Keluar Ujian</h2>
+        <span class="modal-subtitle">Masukkan password pengawas untuk mengakhiri sesi:</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="exitPassInput">Password Keluar</label>
+          <input type="password" id="exitPassInput" class="form-control" placeholder="Password keluar" autofocus>
+        </div>
+        <div id="exitErrorMsg" class="error-msg"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelExit" class="btn btn-secondary">Batal</button>
+        <button id="btnConfirmExit" class="btn btn-danger">Keluar Aplikasi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer Shield -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M54,16 L24,27 L24,58 C24,78.5 36.8,97.2 54,104 C71.2,97.2 84,78.5 84,58 L84,27 L54,16 Z" />
+    <!-- Inner Shield (Lighter for depth) -->
+    <path
+        android:fillColor="#60A5FA"
+        android:pathData="M54,22 L29,31 L29,58 C29,75.4 39.8,91.2 54,97 C68.2,91.2 79,75.4 79,58 L79,31 L54,22 Z" />
+    <!-- Checkmark or Lock inside -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48.5,69 L34.5,55 L39.5,50 L48.5,59 L68.5,39 L73.5,44 Z" />
+</vector>
