@@ -47,10 +47,6 @@ function createWindow() {
     }
   });
 
-  // Elevate window level to 'screen-saver' to render above macOS Notification Center banners and system popups
-  mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
-  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-
   // Enable macOS Screenshot and Screen Capture protection
   if (typeof mainWindow.setContentProtection === 'function') {
     mainWindow.setContentProtection(true);
@@ -62,20 +58,19 @@ function createWindow() {
   // Load UI
   mainWindow.loadFile(path.join(__dirname, 'src/index.html'));
 
-  // Anti-Cheat: If user attempts to click notification banner, dock, or switch apps, reclaim focus immediately
+  // Anti-Cheat: Debounced focus recovery without freezing WindowServer
+  let blurDebounceTimer = null;
   mainWindow.on('blur', () => {
     if (!isQuittingAllowed && mainWindow && !mainWindow.isDestroyed()) {
-      setTimeout(() => {
-        if (!isQuittingAllowed && mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.show();
+      if (blurDebounceTimer) clearTimeout(blurDebounceTimer);
+      blurDebounceTimer = setTimeout(() => {
+        if (!isQuittingAllowed && mainWindow && !mainWindow.isDestroyed() && !mainWindow.isFocused()) {
           mainWindow.focus();
-          mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
-          app.focus({ steal: true });
           if (mainWindow.webContents) {
             mainWindow.webContents.send('app-blur-warning');
           }
         }
-      }, 50);
+      }, 300);
     }
   });
 
@@ -93,6 +88,7 @@ function createWindow() {
   mainWindow.webContents.setWindowOpenHandler(() => {
     return { action: 'deny' };
   });
+
 
 
   // Intercept keyboard shortcuts
