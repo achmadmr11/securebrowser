@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, globalShortcut, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, globalShortcut, dialog, session } = require('electron');
 const path = require('path');
 const Store = require('./store');
 
@@ -8,6 +8,21 @@ let isQuittingAllowed = false;
 
 function createWindow() {
   store = new Store();
+
+  // Deny all web/system notifications from webview and main session
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    if (permission === 'notifications' || permission === 'mediaKeySystem') {
+      return callback(false);
+    }
+    callback(true);
+  });
+
+  session.defaultSession.setPermissionCheckHandler((webContents, permission) => {
+    if (permission === 'notifications') {
+      return false;
+    }
+    return true;
+  });
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -32,6 +47,10 @@ function createWindow() {
     }
   });
 
+  // Elevate window level to 'screen-saver' to render above macOS Notification Center banners and system popups
+  mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
   // Enable macOS Screenshot and Screen Capture protection
   if (typeof mainWindow.setContentProtection === 'function') {
     mainWindow.setContentProtection(true);
@@ -42,6 +61,23 @@ function createWindow() {
 
   // Load UI
   mainWindow.loadFile(path.join(__dirname, 'src/index.html'));
+
+  // Anti-Cheat: If user attempts to click notification banner, dock, or switch apps, reclaim focus immediately
+  mainWindow.on('blur', () => {
+    if (!isQuittingAllowed && mainWindow && !mainWindow.isDestroyed()) {
+      setTimeout(() => {
+        if (!isQuittingAllowed && mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.show();
+          mainWindow.focus();
+          mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
+          app.focus({ steal: true });
+          if (mainWindow.webContents) {
+            mainWindow.webContents.send('app-blur-warning');
+          }
+        }
+      }, 50);
+    }
+  });
 
   // Intercept window close attempt (e.g. system signal)
   mainWindow.on('close', (e) => {
@@ -57,6 +93,7 @@ function createWindow() {
   mainWindow.webContents.setWindowOpenHandler(() => {
     return { action: 'deny' };
   });
+
 
   // Intercept keyboard shortcuts
   mainWindow.webContents.on('before-input-event', (event, input) => {
@@ -113,6 +150,9 @@ function createWindow() {
   });
 }
 
+// App lifecycle flags
+let isQuittingAllowed = false;
+
 // Register IPC handlers
 ipcMain.handle('get-settings', async () => {
   return {
@@ -148,13 +188,30 @@ ipcMain.handle('quit-app', async (event, password) => {
   const currentExitPass = store.get('exitPassword');
   if (password === currentExitPass) {
     isQuittingAllowed = true;
+    try {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.setClosable(true);
+        mainWindow.setKiosk(false);
+        mainWindow.setFullScreen(false);
+        mainWindow.destroy();
+      }
+    } catch (e) {
+      console.error('Error closing window:', e);
+    }
     app.quit();
+    setTimeout(() => {
+      app.exit(0);
+    }, 100);
     return { success: true };
   }
   return { success: false, message: 'Password salah!' };
 });
 
 // App lifecycle
+app.on('before-quit', () => {
+  isQuittingAllowed = true;
+});
+
 app.whenReady().then(() => {
   createWindow();
 
@@ -170,3 +227,4 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+

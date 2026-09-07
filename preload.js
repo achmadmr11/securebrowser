@@ -12,5 +12,9 @@ contextBridge.exposeInMainWorld('examEduAPI', {
   },
   onTriggerAdminDialog: (callback) => {
     ipcRenderer.on('trigger-admin-dialog', () => callback());
+  },
+  onBlurWarning: (callback) => {
+    ipcRenderer.on('app-blur-warning', () => callback());
   }
 });
+

@@ -59,10 +59,15 @@ async function init() {
       window.examEduAPI.onTriggerAdminDialog(() => {
         openAdminModal();
       });
+
+      window.examEduAPI.onBlurWarning(() => {
+        showToast('⚠️ Peringatan: Dilarang beralih aplikasi atau membuka notifikasi!', 4000);
+      });
     }
   } catch (err) {
     console.error('Failed to init settings:', err);
   }
+
 
   setupEventListeners();
   setupWebview();
@@ -213,17 +218,19 @@ function openAdminModal() {
   adminPassInput.value = '';
   examUrlInput.value = currentSettings.examUrl;
   appTitleInput.value = currentSettings.appTitle;
+  if (cbtWebview) cbtWebview.style.pointerEvents = 'none';
   adminModal.classList.add('active');
-  adminPassInput.focus();
+  setTimeout(() => adminPassInput.focus(), 60);
 }
 
 function closeAdminModal() {
   adminModal.classList.remove('active');
+  if (cbtWebview) cbtWebview.style.pointerEvents = 'auto';
 }
 
 async function handleSaveAdmin() {
   adminErrorMsg.textContent = '';
-  const enteredPass = adminPassInput.value;
+  const enteredPass = adminPassInput.value.trim();
   const newUrl = examUrlInput.value.trim();
   const newTitle = appTitleInput.value.trim();
 
@@ -255,17 +262,19 @@ async function handleSaveAdmin() {
 function openExitModal() {
   exitErrorMsg.textContent = '';
   exitPassInput.value = '';
+  if (cbtWebview) cbtWebview.style.pointerEvents = 'none';
   exitModal.classList.add('active');
-  exitPassInput.focus();
+  setTimeout(() => exitPassInput.focus(), 60);
 }
 
 function closeExitModal() {
   exitModal.classList.remove('active');
+  if (cbtWebview) cbtWebview.style.pointerEvents = 'auto';
 }
 
 async function handleConfirmExit() {
   exitErrorMsg.textContent = '';
-  const enteredPass = exitPassInput.value;
+  const enteredPass = exitPassInput.value.trim();
 
   if (!enteredPass) {
     exitErrorMsg.textContent = 'Masukkan password keluar!';
@@ -273,12 +282,23 @@ async function handleConfirmExit() {
   }
 
   if (window.examEduAPI) {
-    const result = await window.examEduAPI.quitApp(enteredPass);
-    if (!result.success) {
-      exitErrorMsg.textContent = result.message || 'Password salah!';
+    btnConfirmExit.disabled = true;
+    btnConfirmExit.textContent = 'Keluar...';
+    try {
+      const result = await window.examEduAPI.quitApp(enteredPass);
+      if (!result.success) {
+        exitErrorMsg.textContent = result.message || 'Password salah!';
+        btnConfirmExit.disabled = false;
+        btnConfirmExit.textContent = 'Keluar Aplikasi';
+      }
+    } catch (err) {
+      exitErrorMsg.textContent = 'Gagal memproses keluar aplikasi';
+      btnConfirmExit.disabled = false;
+      btnConfirmExit.textContent = 'Keluar Aplikasi';
     }
   }
 }
+
 
 // Start
 document.addEventListener('DOMContentLoaded', init);
