@@ -150,11 +150,9 @@ function createWindow() {
   });
 }
 
-// App lifecycle flags
-let isQuittingAllowed = false;
-
 // Register IPC handlers
 ipcMain.handle('get-settings', async () => {
+
   return {
     examUrl: store.get('examUrl'),
     appTitle: store.get('appTitle')
